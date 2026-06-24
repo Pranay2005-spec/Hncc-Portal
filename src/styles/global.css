@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    background: #eaf2fa;
+  }
+
+  body {
+    min-height: 100vh;
+    background: #eaf2fa;
+    color: #1f2933;
+    font-family: Verdana, Tahoma, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .portal-card {
+    border: 1px solid #d0d8e0;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(31, 41, 51, 0.06);
+  }
+
+  .portal-input {
+    width: 100%;
+    border: 1px solid #c9d2db;
+    border-radius: 0.6rem;
+    background: #fbfcfd;
+    padding: 0.65rem 0.8rem;
+    font-size: 0.875rem;
+    color: #1f2933;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  }
+
+  .portal-input:focus {
+    border-color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  .portal-button {
+    border-radius: 0.6rem;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 0.65rem 1rem;
+    transition: background 150ms ease;
+  }
+
+  .portal-button:hover {
+    background: #1d4ed8;
+  }
+
+  .portal-secondary-button {
+    border: 1px solid #c9d2db;
+    border-radius: 0.6rem;
+    background: #ffffff;
+    color: #3f3f3a;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.65rem 0.8rem;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+
+  .portal-secondary-button:hover {
+    border-color: #9b9b93;
+    background: #f6f6f3;
+  }
+}
