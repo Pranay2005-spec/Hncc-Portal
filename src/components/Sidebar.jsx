@@ -33,6 +33,7 @@ const sidebarItems = [
 function Sidebar({ isOpen, onToggle }) {
   const navigate = useNavigate();
   const studentName = localStorage.getItem('studentName') || 'Student';
+  const enrollmentNo = localStorage.getItem('enrollmentNo') || '';
   const initial = studentName.charAt(0).toUpperCase();
 
   const handleLogout = () => {
@@ -88,7 +89,7 @@ function Sidebar({ isOpen, onToggle }) {
             {sidebarItems.map((item) => (
               <li key={item.path}>
                 <NavLink
-                  to={item.path}
+                  to={item.path === '/result' && enrollmentNo ? `/result?enrollmentNo=${enrollmentNo}` : item.path}
                   onClick={onToggle}
                   className={({ isActive }) =>
                     `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition duration-150 ${

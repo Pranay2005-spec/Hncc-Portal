@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { usePortal } from '../context/PortalContext';
 
@@ -59,49 +59,42 @@ function AdminAddResultPage() {
 
   return (
     <section className="mx-auto max-w-3xl">
-      <div className="mb-4 flex flex-col-reverse items-center gap-3 sm:flex-row sm:justify-between sm:text-left">
-        <div className="mx-auto sm:mx-0">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-500">Admin page</p>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Add result data</h2>
-        </div>
-        <Link className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white" to="/admin/dashboard">
-          Dashboard
-        </Link>
-      </div>
+      <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-[#64748b]">Admin page</p>
+      <h2 className="mb-6 text-2xl font-bold text-[#1e293b] sm:text-3xl">Add Result Data</h2>
 
-      <div className="rounded-[1.25rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <form className="grid gap-4 sm:gap-5 sm:grid-cols-2" onSubmit={handleSubmit}>
-          <label className="block text-left sm:col-span-2">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Student Name</span>
+      <div className="rounded-xl border border-[#d0d8e0] bg-white p-5 shadow-lg sm:p-8">
+        <form className="grid gap-4 sm:grid-cols-2 sm:gap-5" onSubmit={handleSubmit}>
+          <label className="block sm:col-span-2">
+            <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Student Name</span>
             <input
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="portal-input"
               value={studentName}
               onChange={(event) => setStudentName(event.target.value)}
               placeholder="Student name"
             />
           </label>
-          <label className="block text-left">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Enrollment No</span>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Enrollment No</span>
             <input
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="portal-input"
               value={enrollmentNo}
               onChange={(event) => setEnrollmentNo(event.target.value)}
               placeholder="24203001065"
             />
           </label>
-          <label className="block text-left">
-            <span className="mb-2 block text-sm font-medium text-slate-700">DOB</span>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-semibold text-[#334155]">DOB</span>
             <input
               type="date"
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="portal-input"
               value={dob}
               onChange={(event) => setDob(event.target.value)}
             />
           </label>
-          <label className="block text-left">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Department</span>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Department</span>
             <select
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="portal-input"
               value={department}
               onChange={(event) => setDepartment(event.target.value)}
             >
@@ -111,46 +104,46 @@ function AdminAddResultPage() {
               <option value="MBA">MBA</option>
             </select>
           </label>
-          <label className="block text-left">
-            <span className="mb-2 block text-sm font-medium text-slate-700">CGPA</span>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-semibold text-[#334155]">CGPA</span>
             <input
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="portal-input"
               value={cgpa}
               onChange={(event) => setCgpa(event.target.value)}
               placeholder="8.74"
             />
           </label>
-          <label className="block text-left">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Attendance</span>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Attendance</span>
             <input
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="portal-input"
               value={attendance}
               onChange={(event) => setAttendance(event.target.value)}
               placeholder="91%"
             />
           </label>
-          <label className="block text-left sm:col-span-2">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Program</span>
+          <label className="block sm:col-span-2">
+            <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Program</span>
             <input
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="portal-input"
               value={program}
               onChange={(event) => setProgram(event.target.value)}
               placeholder="Program name"
             />
           </label>
-          <label className="block text-left">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Semester</span>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Semester</span>
             <input
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="portal-input"
               value={semester}
               onChange={(event) => setSemester(event.target.value)}
               placeholder="Semester IV"
             />
           </label>
-          <label className="block text-left">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Status</span>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Status</span>
             <select
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              className="portal-input"
               value={status}
               onChange={(event) => setStatus(event.target.value)}
             >
@@ -159,30 +152,30 @@ function AdminAddResultPage() {
             </select>
           </label>
 
-          <div className="sm:col-span-2 space-y-4 rounded-[1rem] border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Subjects</p>
+          <div className="space-y-4 rounded-xl border border-[#d0d8e0] bg-[#f8fafc] p-4 sm:col-span-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#64748b]">Subjects</p>
             {subjects.map((subject, index) => (
               <div key={subject.code} className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
                 <input
-                  className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+                  className="portal-input"
                   value={subject.code}
                   onChange={(event) => updateSubject(index, 'code', event.target.value)}
                   placeholder="Code"
                 />
                 <input
-                  className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+                  className="portal-input"
                   value={subject.name}
                   onChange={(event) => updateSubject(index, 'name', event.target.value)}
                   placeholder="Subject name"
                 />
                 <input
-                  className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+                  className="portal-input"
                   value={subject.marks}
                   onChange={(event) => updateSubject(index, 'marks', event.target.value)}
                   placeholder="Marks"
                 />
                 <input
-                  className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+                  className="portal-input"
                   value={subject.grade}
                   onChange={(event) => updateSubject(index, 'grade', event.target.value)}
                   placeholder="Grade"
@@ -192,13 +185,20 @@ function AdminAddResultPage() {
           </div>
 
           <button
-            className="sm:col-span-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="portal-button w-full sm:col-span-2 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={!isFormReady}
           >
             Save Result
           </button>
         </form>
-        {message ? <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{message}</p> : null}
+        {message ? (
+          <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#f0fdf4] px-4 py-2.5 text-sm text-[#16a34a]">
+            <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            {message}
+          </div>
+        ) : null}
       </div>
     </section>
   );

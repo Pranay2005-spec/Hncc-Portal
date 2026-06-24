@@ -138,10 +138,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mt-10 rounded-lg border border-[#d0d8e0] bg-white px-5 py-4 text-center text-xs text-[#64748b] sm:mt-14 sm:px-8 sm:text-sm">
-        &copy; {new Date().getFullYear()} HNCC Result Portal &mdash; Hirachand Nemchand College of Commerce, Pune.
-      </footer>
     </>
   );
 }
