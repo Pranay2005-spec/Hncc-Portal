@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { enrollmentHint } from '../data/mockData';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { usePortal } from '../context/PortalContext';
+import { API_BASE } from '../config';
 
 function makeCaptcha() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -11,19 +12,16 @@ function makeCaptcha() {
   return value;
 }
 
-function HomePage() {
+function StudentLoginPage() {
   const navigate = useNavigate();
+  const { setStudentSession } = usePortal();
 
-  useEffect(() => {
-    if (localStorage.getItem('studentLoggedIn') === 'true') {
-      navigate('/result', { replace: true });
-    }
-  }, [navigate]);
-
-  const [enrollmentNo, setEnrollmentNo] = useState('24203001065');
+  const [enrollmentNo, setEnrollmentNo] = useState('');
+  const [password, setPassword] = useState('');
   const [captcha, setCaptcha] = useState(() => makeCaptcha());
   const [captchaInput, setCaptchaInput] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const refreshCaptcha = () => {
     setCaptcha(makeCaptcha());
@@ -31,20 +29,46 @@ function HomePage() {
     setError('');
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+
     if (!/^\d{11}$/.test(enrollmentNo.trim())) {
       setError('Enter a valid 11 digit enrollment number.');
       return;
     }
+
     if (captchaInput.trim().toUpperCase() !== captcha) {
       setError('Captcha does not match.');
       setCaptcha(makeCaptcha());
       setCaptchaInput('');
       return;
     }
+
+    setLoading(true);
     setError('');
-    navigate(`/result?enrollmentNo=${encodeURIComponent(enrollmentNo.trim())}`);
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enrollmentNo: enrollmentNo.trim(), password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || 'Login failed.');
+        setLoading(false);
+        return;
+      }
+
+      setStudentSession(data.token, data.student);
+      navigate(`/result?enrollmentNo=${encodeURIComponent(enrollmentNo.trim())}`);
+    } catch {
+      setError('Unable to connect to server. Please try again.');
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -62,10 +86,13 @@ function HomePage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-bold text-[#1e293b]">View Result</h2>
-                <p className="text-xs text-[#64748b]">Enter your enrollment number</p>
+                <h2 className="text-base font-bold text-[#1e293b]">Student Login</h2>
+                <p className="mt-0.5 text-xs text-[#64748b]">
+                  Enter your enrollment number and password.
+                </p>
               </div>
             </div>
+
             <form className="space-y-4" onSubmit={handleSubmit}>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Enrollment No</span>
@@ -79,7 +106,20 @@ function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                   </svg>
                 </div>
-                <p className="mt-1 text-xs text-[#94a3b8]">{enrollmentHint}</p>
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Password</span>
+                <div className="relative">
+                  <input type="password" className="portal-input pl-9"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Enter your password"
+                  />
+                  <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                </div>
               </label>
 
               <div className="space-y-2">
@@ -98,7 +138,8 @@ function HomePage() {
                           style={{ transform: `rotate(${(i % 2 === 0 ? 1 : -1) * (2 + Math.random() * 4)}deg)`, fontSize: `${13 + (i % 3) * 2}px` }}
                         >{char}</span>
                       ))}
-                    </div>                      <button type="button" onClick={refreshCaptcha}
+                    </div>
+                    <button type="button" onClick={refreshCaptcha}
                       className="portal-secondary-button flex h-10 w-10 items-center justify-center p-0" title="Refresh captcha"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,13 +159,22 @@ function HomePage() {
                 </div>
               )}
 
-              <button type="submit" className="portal-button w-full flex items-center justify-center gap-2">
-                View Result
+              <button type="submit" disabled={loading}
+                className="portal-button w-full flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {loading ? 'Logging in...' : 'Login'}
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </button>
             </form>
+
+            <div className="mt-4 text-center text-sm text-[#64748b]">
+              Don&apos;t have an account?{' '}
+              <Link to="/student/register" className="font-medium text-[#2563eb] hover:text-[#1d4ed8]">
+                Register here
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -132,4 +182,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default StudentLoginPage;

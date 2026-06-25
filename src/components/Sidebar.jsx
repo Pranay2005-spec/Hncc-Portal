@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import { usePortal } from '../context/PortalContext';
 
 const sidebarItems = [
   {
@@ -32,14 +33,13 @@ const sidebarItems = [
 
 function Sidebar({ isOpen, onToggle }) {
   const navigate = useNavigate();
-  const studentName = localStorage.getItem('studentName') || 'Student';
-  const enrollmentNo = localStorage.getItem('enrollmentNo') || '';
+  const { logoutStudent, student } = usePortal();
+  const studentName = student?.studentName || localStorage.getItem('studentName') || 'Student';
+  const enrollmentNo = student?.enrollmentNo || localStorage.getItem('enrollmentNo') || '';
   const initial = studentName.charAt(0).toUpperCase();
 
   const handleLogout = () => {
-    localStorage.removeItem('studentLoggedIn');
-    localStorage.removeItem('studentName');
-    localStorage.removeItem('enrollmentNo');
+    logoutStudent();
     navigate('/');
   };
 

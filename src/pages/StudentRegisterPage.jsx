@@ -1,0 +1,340 @@
+import { useState, useRef } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { usePortal } from '../context/PortalContext';
+import { API_BASE } from '../config';
+
+function makeCaptcha() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let value = '';
+  for (let index = 0; index < 5; index += 1) {
+    value += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return value;
+}
+
+function StudentRegisterPage() {
+  const navigate = useNavigate();
+  const { setStudentSession } = usePortal();
+
+  const [step, setStep] = useState(1);
+  const [enrollmentNo, setEnrollmentNo] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [captcha, setCaptcha] = useState(() => makeCaptcha());
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [error, setError] = useState('');
+  const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
+  const otpRef = useRef(null);
+
+  const refreshCaptcha = () => {
+    setCaptcha(makeCaptcha());
+    setCaptchaInput('');
+    setError('');
+  };
+
+  const handleDetailsSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!/^\d{11}$/.test(enrollmentNo.trim())) {
+      setError('Enter a valid 11 digit enrollment number.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 4) {
+      setError('Password must be at least 4 characters.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    if (captchaInput.trim().toUpperCase() !== captcha) {
+      setError('Captcha does not match.');
+      setCaptcha(makeCaptcha());
+      setCaptchaInput('');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enrollmentNo: enrollmentNo.trim(), email: email.trim(), password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || 'Registration failed.');
+        setLoading(false);
+        return;
+      }
+
+      setStep(2);
+      setTimeout(() => otpRef.current?.focus(), 100);
+    } catch {
+      setError('Unable to connect to server. Please try again.');
+    }
+
+    setLoading(false);
+  };
+
+  const handleOtpSubmit = async (event) => {
+    event.preventDefault();
+
+    if (otp.trim().length !== 6) {
+      setError('Enter a valid 6-digit OTP.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enrollmentNo: enrollmentNo.trim(), otp: otp.trim(), password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || 'Verification failed.');
+        setLoading(false);
+        return;
+      }
+
+      setStudentSession(data.token, data.student);
+      navigate(`/result?enrollmentNo=${encodeURIComponent(enrollmentNo.trim())}`);
+    } catch {
+      setError('Unable to connect to server. Please try again.');
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#dbeafe] via-[#e8f2fc] to-[#f0f7ff] shadow-sm border border-[#d0d8e0]">
+      <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-[#2563eb]/8 blur-3xl sm:-right-32 sm:-top-32 sm:h-80 sm:w-80" />
+      <div className="pointer-events-none absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-[#2563eb]/5 blur-3xl sm:-bottom-32 sm:-left-32 sm:h-64 sm:w-64" />
+
+      <div className="relative z-10 flex flex-col gap-6 px-4 py-6 lg:flex-row lg:items-center lg:justify-center lg:gap-12 lg:px-12 lg:py-16">
+        <div className="w-full shrink-0 lg:w-[28rem]">
+          <div className="rounded-xl border border-[#d0d8e0] bg-white p-5 shadow-lg sm:p-8">
+
+            <div className="mb-6 flex items-center gap-2">
+              <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                step >= 1 ? 'bg-[#2563eb] text-white' : 'bg-[#e2e8f0] text-[#94a3b8]'
+              }`}>1</div>
+              <div className={`h-0.5 flex-1 ${step >= 2 ? 'bg-[#2563eb]' : 'bg-[#e2e8f0]'}`} />
+              <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                step >= 2 ? 'bg-[#2563eb] text-white' : 'bg-[#e2e8f0] text-[#94a3b8]'
+              }`}>2</div>
+            </div>
+
+            {step === 1 ? (
+              <>
+                <div className="mb-6 flex items-center gap-3 border-b border-[#e2e8f0] pb-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2563eb]">
+                    <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-[#1e293b]">Student Register</h2>
+                    <p className="mt-0.5 text-xs text-[#64748b]">
+                      Enter your details to create an account.
+                    </p>
+                  </div>
+                </div>
+
+                <form className="space-y-4" onSubmit={handleDetailsSubmit}>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Enrollment No</span>
+                    <div className="relative">
+                      <input className="portal-input pl-9" inputMode="numeric" maxLength={11}
+                        value={enrollmentNo}
+                        onChange={(event) => setEnrollmentNo(event.target.value.replace(/\D/g, ''))}
+                        placeholder="24203001065" aria-invalid={Boolean(error)}
+                      />
+                      <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                      </svg>
+                    </div>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Email</span>
+                    <div className="relative">
+                      <input type="email" className="portal-input pl-9"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="your@email.com"
+                      />
+                      <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Password</span>
+                    <div className="relative">
+                      <input type="password" className="portal-input pl-9"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Create a password (min 4 chars)"
+                      />
+                      <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                    </div>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-semibold text-[#334155]">Confirm Password</span>
+                    <div className="relative">
+                      <input type="password" className="portal-input pl-9"
+                        value={confirmPassword}
+                        onChange={(event) => setConfirmPassword(event.target.value)}
+                        placeholder="Re-enter your password"
+                      />
+                      <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                    </div>
+                  </label>
+
+                  <div className="space-y-2">
+                    <span className="block text-sm font-semibold text-[#334155]">Captcha Verification</span>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                      <div className="flex-1">
+                        <input className="portal-input uppercase" value={captchaInput}
+                          onChange={(event) => setCaptchaInput(event.target.value)}
+                          placeholder="Enter captcha"
+                        />
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <div className="flex h-10 items-center rounded-lg border border-dashed border-[#cbd5e1] bg-gradient-to-r from-[#f8fafc] to-[#f1f5f9] px-3 font-mono text-sm font-bold tracking-[0.25em] text-[#1e293b] select-none">
+                          {captcha.split('').map((char, i) => (
+                            <span key={i} className="inline-block"
+                              style={{ transform: `rotate(${(i % 2 === 0 ? 1 : -1) * (2 + Math.random() * 4)}deg)`, fontSize: `${13 + (i % 3) * 2}px` }}
+                            >{char}</span>
+                          ))}
+                        </div>
+                        <button type="button" onClick={refreshCaptcha}
+                          className="portal-secondary-button flex h-10 w-10 items-center justify-center p-0" title="Refresh captcha"
+                        >
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="flex items-center gap-2 rounded-lg bg-[#fef2f2] px-4 py-2.5 text-sm text-[#dc2626]">
+                      <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      {error}
+                    </div>
+                  )}
+
+                  <button type="submit" disabled={loading}
+                    className="portal-button w-full flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    {loading ? 'Sending...' : 'Send OTP'}
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <div className="mb-6 flex items-center gap-3 border-b border-[#e2e8f0] pb-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2563eb]">
+                    <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-[#1e293b]">Verify Email</h2>
+                    <p className="mt-0.5 text-xs text-[#64748b]">
+                      An OTP has been sent to{' '}
+                      <span className="font-medium text-[#1e293b]">{email}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <form className="space-y-4" onSubmit={handleOtpSubmit}>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm font-semibold text-[#334155]">OTP Code</span>
+                    <input ref={otpRef} className="portal-input text-center text-lg font-bold tracking-[0.5em]"
+                      value={otp}
+                      onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="000000" maxLength={6} inputMode="numeric"
+                    />
+                    <p className="mt-1 text-xs text-[#94a3b8]">
+                      Enter the 6-digit code sent to your email.
+                    </p>
+                  </label>
+
+                  {error && (
+                    <div className="flex items-center gap-2 rounded-lg bg-[#fef2f2] px-4 py-2.5 text-sm text-[#dc2626]">
+                      <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      {error}
+                    </div>
+                  )}
+
+                  <button type="submit" disabled={loading}
+                    className="portal-button w-full flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    {loading ? 'Verifying...' : 'Verify & Register'}
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+
+                  <button type="button" onClick={() => { setStep(1); setError(''); }}
+                    className="w-full text-center text-sm text-[#64748b] hover:text-[#1e293b]"
+                  >
+                    &larr; Back to details
+                  </button>
+                </form>
+              </>
+            )}
+
+            {step === 1 && (
+              <div className="mt-4 text-center text-sm text-[#64748b]">
+                Already have an account?{' '}
+                <Link to="/student/login" className="font-medium text-[#2563eb] hover:text-[#1d4ed8]">
+                  Login here
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default StudentRegisterPage;
