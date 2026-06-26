@@ -2,9 +2,8 @@ services:
   - type: web
     name: college-result-portal-api
     env: node
-    rootDir: server
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd server && npm install
+    startCommand: cd server && node index.js
     envVars:
       - key: NODE_VERSION
         value: 18.x
