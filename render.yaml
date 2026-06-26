@@ -1,12 +1,8 @@
 services:
   - type: web
     name: college-result-portal-api
-    env: node
-    buildCommand: cd server && npm install
-    startCommand: cd server && node index.js
+    env: docker
     envVars:
-      - key: NODE_VERSION
-        value: 18.x
       - key: DB_HOST
         sync: false
       - key: DB_USER
@@ -25,5 +21,3 @@ services:
         sync: false
       - key: SMTP_PASS
         sync: false
-      - key: PORT
-        value: "10000"
